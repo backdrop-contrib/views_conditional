@@ -18,7 +18,7 @@ function views_conditional_views_data() {
     'title' => t('Views Conditional'),
     'help' => t('Output data based off of certain criteria'),
     'field' => array(
-      'handler' => 'views_conditional_handler',
+      'handler' => 'ViewsConditionalHandler',
     ),
   );
 

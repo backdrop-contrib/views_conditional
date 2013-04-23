@@ -2,24 +2,24 @@
 
 /**
  * @file
- * Handles conditionals in Views.  IF (xxx) THEN (yyy)...
+ * Handles conditionals in Views.  IF xxx THEN yyy...
  */
 
-class views_conditional_handler extends views_handler_field {
-  // Conditional oeprators
+class ViewsConditionalHandler extends views_handler_field {
+  // Conditional operators.
   public $conditions = array(
-    1 => t('Equal to'),
-    2 => t('NOT equal to'),
-    3 => t('Greater than'),
-    4 => t('Less than'),
-    5 => t('Empty'),
-    6 => t('NOT empty'),
+    1 => 'Equal to',
+    2 => 'NOT equal to',
+    3 => 'Greater than',
+    4 => 'Less than',
+    5 => 'Empty',
+    6 => 'NOT empty',
   );
 
   /**
    * Set default values for form elements.
    */
-  function option_definition() {
+  public function option_definition() {
     $options = parent::option_definition();
     $options['label']['default'] = NULL;
 
@@ -35,7 +35,7 @@ class views_conditional_handler extends views_handler_field {
   /**
    * Views form elements.
    */
-  function options_form(&$form, &$form_state) {
+  public function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
 
     $form['relationship']['#access'] = FALSE;
@@ -59,7 +59,7 @@ class views_conditional_handler extends views_handler_field {
       '#type' => 'select',
       '#title' => t('Is...'),
       '#options' => $this->conditions,
-      '#default_value' => $this->options['condition']
+      '#default_value' => $this->options['condition'],
     );
 
     $form['equalto'] = array(
@@ -80,39 +80,39 @@ class views_conditional_handler extends views_handler_field {
       '#type' => 'textfield',
       '#title' => t('Otherwise, output this...'),
       '#description' => t('Input what should be output if the above conditions do NOT evaluate to true.'),
-      '#default_value' => $this->options['or']
+      '#default_value' => $this->options['or'],
     );
 
     $form['replacements'] = array(
       '#type' => 'fieldset',
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
-      '#title' => t('Replacement Variables')
+      '#title' => t('Replacement Variables'),
     );
 
     $form['replacements']['notice'] = array(
       '#markup' => 'You may use any of these replacement variables in the "equals" or the "output" text fields.  If you wish to use brackets ([ or ]), replace them with %5D or %5E.',
       '#prefix' => '<p>',
-      '#suffix' => '</p>'
+      '#suffix' => '</p>',
     );
 
     $items = array(
       'DATE_UNIX => Current date / time, in UNIX timestamp format (' . REQUEST_TIME . ')',
-      'DATE_STAMP => Current date / time, in standard format (' . format_date(REQUEST_TIME) . ')', 
+      'DATE_STAMP => Current date / time, in standard format (' . format_date(REQUEST_TIME) . ')',
     );
-    foreach ($this->view->display_handler->get_field_labels() AS $item => $title) {
+    foreach ($this->view->display_handler->get_field_labels() as $item => $title) {
       $items[] = "[$item] => $title";
     }
 
     $form['replacements']['variables'] = array(
-      '#markup' => theme('item_list', array('items' => $items))
+      '#markup' => theme('item_list', array('items' => $items)),
     );
   }
 
   /**
    * Check that everything is in order.
    */
-  function options_validate($form, &$form_state) {
+  public function options_validate($form, &$form_state) {
     $values = &$form_state['values']['options'];
     if (empty($values['if']) || empty($values['condition']) || empty($values['equalto'])) {
       if (empty($values['if'])) {
@@ -130,14 +130,14 @@ class views_conditional_handler extends views_handler_field {
   /**
    * Defines summary text for Fields category in Views.
    */
-  function admin_summary() {
+  public function admin_summary() {
     if (!empty($this->options['if']) && !empty($this->options['condition']) && (!empty($this->options['equalto']) || in_array($this->options['condition'], array(5, 6))) && trim($this->options['then']) != '') {
       return t('If !if is !condition !equalto, output !then, else output !or', array(
         '!if' => $this->options['if'],
         '!condition' => $this->conditions[$this->options['condition']],
         '!equalto' => $this->options['equalto'],
         '!then' => $this->options['then'],
-        '!or' => $this->options['or']
+        '!or' => $this->options['or'],
       ));
     }
     else {
@@ -148,35 +148,38 @@ class views_conditional_handler extends views_handler_field {
   /**
    * Remove advanced rendering options from form.
    */
-  function allow_advanced_render() {
+  public function allow_advanced_render() {
     return FALSE;
   }
 
   /**
    * Defines field alias.  No query manipulation necessary.
    */
-  function query() {
+  public function query() {
     $this->field_alias = 'views_conditional_' . $this->position;
   }
 
-  function clean_var($var, $key) {
+  /**
+   *  Cleans a variable for handling later.
+   */
+  public function clean_var($var, $key) {
     $f = array();
     if (isset($var->view->query->pager->display->handler->options['fields'][$key])) {
       $f = $var->view->query->pager->display->handler->options['fields'][$key];
     }
 
     $unparsed = trim($var->last_render);
-    $parse = true;
+    $parse = TRUE;
     if (!empty($f['element_type'])) {
-      $parse = false;
+      $parse = FALSE;
     }
 
     if (isset($f['alter']['make_link']) && $f['alter']['make_link'] == 1) {
-      $parse = false;
+      $parse = FALSE;
     }
 
     if (isset($f['alter']['prefix']) || isset($f['alter']['suffix'])) {
-      $parse = false;
+      $parse = FALSE;
     }
 
     if ($parse) {
@@ -189,7 +192,7 @@ class views_conditional_handler extends views_handler_field {
   /**
    * Renders the final output based on conditional input.
    */
-  function render($values) {
+  public function render($values) {
     $if = $this->options['if'];
     $condition = $this->options['condition'];
     $equalto = $this->options['equalto'];
@@ -200,41 +203,44 @@ class views_conditional_handler extends views_handler_field {
     $fields = $this->view->display_handler->get_handlers('field');
 
     // Search through field information for possible replacement variables.
-    foreach ($this->view->display_handler->get_field_labels() AS $key => $var) {
+    foreach ($this->view->display_handler->get_field_labels() as $key => $var) {
       // If we find a replacement variable, replace it.
-      if (strpos($then, "[$key]") !== false) {
+      if (strpos($then, "[$key]") !== FALSE) {
         $field = $this->clean_var($fields[$key], $key);
         $then = str_replace("[$key]", $field, $then);
       }
-      else if (strpos($or, "[$key]") !== false) {
+      elseif (strpos($or, "[$key]") !== FALSE) {
         $field = $this->clean_var($fields[$key], $key);
         $or = str_replace("[$key]", $field, $or);
       }
     }
 
     // If we find a date stamp replacement, replace that.
-    if (strpos($then, 'DATE_STAMP') !== false) {
+    if (strpos($then, 'DATE_STAMP') !== FALSE) {
       $then = str_replace('DATE_STAMP', format_date(REQUEST_TIME), $then);
     }
-    else if (strpos($then, 'DATE_STAMP') !== false) {
+    elseif (strpos($then, 'DATE_STAMP') !== FALSE) {
       $or = str_replace('DATE_STAMP', format_date(REQUEST_TIME), $or);
     }
 
     // If we find a unix date stamp replacement, replace that.
-    if (strpos($then, 'DATE_UNIX') !== false) {
+    if (strpos($then, 'DATE_UNIX') !== FALSE) {
       $then = str_replace('DATE_UNIX', REQUEST_TIME, $then);
     }
-    else if (strpos($or, 'DATE_UNIX') !== false) {
+    elseif (strpos($or, 'DATE_UNIX') !== FALSE) {
       $or = str_replace('DATE_UNIX', REQUEST_TIME, $or);
     }
 
-    // Strip tags on the "if" field.  Otherwise it appears to output as <div class="xxx">Field data</div>...
-    // ...which of course makes it dificult to compare.
+    /** 
+     *  Strip tags on the "if" field.  Otherwise it appears to
+     *  output as <div class="xxx">Field data</div>...
+     *  ...which of course makes it dificult to compare.
+     */
     $r = trim(strip_tags($fields["$if"]->last_render));
 
     // Run conditions.
     switch ($condition) {
-      // Equal to
+      // Equal to.
       case 1:
         if ($r == $equalto) {
           return $then;
@@ -242,8 +248,9 @@ class views_conditional_handler extends views_handler_field {
         else {
           return $or;
         }
-      break;
-      // Not equal to
+        break;
+
+      // Not equal to.
       case 2:
         if ($r !== $equalto) {
           return $then;
@@ -251,8 +258,9 @@ class views_conditional_handler extends views_handler_field {
         else {
           return $or;
         }
-      break;
-      // Greater than
+        break;
+
+      // Greater than.
       case 3:
         if ($r > $equalto) {
           return $then;
@@ -260,8 +268,9 @@ class views_conditional_handler extends views_handler_field {
         else {
           return $or;
         }
-      break;
-      // Less than
+        break;
+
+      // Less than.
       case 4:
         if ($r < $equalto) {
           return $then;
@@ -269,8 +278,9 @@ class views_conditional_handler extends views_handler_field {
         else {
           return $or;
         }
-      break;
-      // Empty
+        break;
+
+      // Empty.
       case 5:
         if (empty($r)) {
           return $then;
@@ -278,8 +288,9 @@ class views_conditional_handler extends views_handler_field {
         else {
           return $or;
         }
-      break;
-      // Not empty
+        break;
+
+      // Not empty.
       case 6:
         if (!empty($r)) {
           return $then;
@@ -287,8 +298,7 @@ class views_conditional_handler extends views_handler_field {
         else {
           return $or;
         }
-      break;
+        break;
     }
   }
-
 }
