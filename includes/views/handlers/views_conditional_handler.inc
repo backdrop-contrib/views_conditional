@@ -160,7 +160,7 @@ class ViewsConditionalHandler extends views_handler_field {
   }
 
   /**
-   *  Cleans a variable for handling later.
+   * Cleans a variable for handling later.
    */
   public function clean_var($var, $key) {
     $f = array();
@@ -231,11 +231,9 @@ class ViewsConditionalHandler extends views_handler_field {
       $or = str_replace('DATE_UNIX', REQUEST_TIME, $or);
     }
 
-    /** 
-     *  Strip tags on the "if" field.  Otherwise it appears to
-     *  output as <div class="xxx">Field data</div>...
-     *  ...which of course makes it dificult to compare.
-     */
+    // Strip tags on the "if" field.  Otherwise it appears to
+    // output as <div class="xxx">Field data</div>...
+    // ...which of course makes it dificult to compare.
     $r = trim(strip_tags($fields["$if"]->last_render));
 
     // Run conditions.
