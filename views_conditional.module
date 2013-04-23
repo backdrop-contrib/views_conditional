@@ -2,7 +2,6 @@
 
 /**
  * @file
- *
  * Views condition is a simple module that allows
  * you to define conditionals (if xxx then yyy) with
  * fields in views.  Conditions include:
@@ -17,7 +16,7 @@
  * based on the result of the condition.
  *
  * @author MChittenden
- */ 
+ */
 
 /**
  * Implements hook_views_api().
