@@ -1,6 +1,6 @@
 Views Conditional Drupal Module
 ---------------------------------------------
-Views condition is a simple module that allows
+Views Conditional is a simple module that allows
 you to define conditionals (if xxx then yyy)
 with fields in views.  Conditions include:
   - Equal to
@@ -10,7 +10,7 @@ with fields in views.  Conditions include:
   - Empty
   - Not empty
 
-Views conditionals allows you to output text
+Views Conditional allows you to output text
 based on the result of the condition.
 
 Installation:
@@ -20,3 +20,10 @@ Installation:
 
 Dependencies:
   - Views
+
+How to use Views Conditional:
+1. Create a view. Add some fields under "FIELDS".
+2. Click on "ADD" next to fields. Scroll down to "Views: Views Conditional", probably found near the bottom of the list.
+3. Add and configure fields...
+4. Choose a field to run a condition against, and provide values accordingly.
+5. Save, views conditional handles the logic and returns as specified.
