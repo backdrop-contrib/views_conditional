@@ -14,6 +14,8 @@ class ViewsConditionalHandler extends views_handler_field {
     4 => 'Less than',
     5 => 'Empty',
     6 => 'NOT empty',
+    7 => 'Contains',
+    8 => 'Does NOT contain',
   );
 
   /**
@@ -112,7 +114,7 @@ class ViewsConditionalHandler extends views_handler_field {
   /**
    * Check that everything is in order.
    */
-  public function options_validate($form, &$form_state) {
+  public function options_validate(&$form, &$form_state) {
     $values = &$form_state['values']['options'];
     if (empty($values['if']) || empty($values['condition']) || empty($values['equalto'])) {
       if (empty($values['if'])) {
@@ -291,6 +293,26 @@ class ViewsConditionalHandler extends views_handler_field {
       // Not empty.
       case 6:
         if (!empty($r)) {
+          return $then;
+        }
+        else {
+          return $or;
+        }
+        break;
+
+      // Contains
+      case 7:
+        if (stripos($r, $equalto) !== FALSE) {
+          return $then;
+        }
+        else {
+          return $or;
+        }
+        break;
+
+      // Does NOT contain
+      case 8:
+        if (stripos($r, $equalto) === FALSE) {
           return $then;
         }
         else {
