@@ -8,12 +8,12 @@
 class ViewsConditionalHandler extends views_handler_field {
   // Conditional operators.
   public $conditions = array(
-    1 => 'Equal to',
-    2 => 'NOT equal to',
-    3 => 'Greater than',
-    4 => 'Less than',
-    5 => 'Empty',
-    6 => 'NOT empty',
+    1 => 'Is Equal to',
+    2 => 'Is NOT equal to',
+    3 => 'Is Greater than',
+    4 => 'Is Less than',
+    5 => 'Is Empty',
+    6 => 'Is NOT empty',
     7 => 'Contains',
     8 => 'Does NOT contain',
   );
@@ -27,6 +27,7 @@ class ViewsConditionalHandler extends views_handler_field {
 
     $options['if'] = array('default' => '');
     $options['condition'] = array('default' => '');
+    $options['conditions'] = array('default' => '');
     $options['equalto'] = array('default' => '');
     $options['then'] = array('default' => '');
     $options['or'] = array('default' => '');
@@ -40,6 +41,9 @@ class ViewsConditionalHandler extends views_handler_field {
   public function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
 
+    $form['#attached']['js'][] = drupal_get_path('module', 'views_conditional') . '/js/field_handler.js';
+    $form['#attached']['css'][] = drupal_get_path('module', 'views_conditional') . '/css/field_handler.css';
+
     $form['relationship']['#access'] = FALSE;
 
     // Display all labels weighted less than the current label.
@@ -50,25 +54,84 @@ class ViewsConditionalHandler extends views_handler_field {
     // We only use fields up to (not including) this one.
     unset($fields[$this->options['id']]);
 
+    #if (!empty($this->options['if'])) {
+    #  echo '<pre>', print_r($this->options), '</pre>'; exit;
+    #}
+
     $form['if'] = array(
       '#type' => 'select',
       '#title' => t('If this field...'),
       '#options' => $fields,
       '#default_value' => $this->options['if'],
+      '#attributes' => array('class' => array('first-field')),
     );
 
-    $form['condition'] = array(
+    $form['extends'] = array(
+      '#markup' => l(t('Add another field'), '', array('fragment' => ' ', 'attributes' => array('id' => 'field-add-and'))),
+    );
+
+    $form['conditions'] = array(
+      '#type' => 'container',
+      '#attributes' => array('id' => 'conditions-container'),
+    );
+
+    $form['conditions']['one'] = array(
+      '#markup' => '#1',
+      '#prefix' => '<span class="condition-number">',
+      '#suffix' => '</span>',
+    );
+
+    $form['conditions']['condition'] = array(
       '#type' => 'select',
-      '#title' => t('Is...'),
+      '#title' => t('Condition...'),
       '#options' => $this->conditions,
       '#default_value' => $this->options['condition'],
     );
 
-    $form['equalto'] = array(
+    $form['conditions']['equalto'] = array(
       '#type' => 'textfield',
       '#title' => t('This value'),
       '#description' => t('Input a value to compare the field against.  Replacement variables may be used'),
       '#default_value' => $this->options['equalto'],
+    );
+
+    if (!empty($this->options['conditions']['more'])) {
+      $form['conditions']['more'] = array(
+        '#type' => 'container',
+        '#attribtues' => array('id' => 'more-container'),
+      );
+
+      $num = 1;
+      foreach ($this->options['conditions']['more']['condition'] as $key => $val) {
+        $form['conditions']['more'][$key] = array(
+          '#markup' => '#' . ++$num,
+          '#prefix' => '<span class="condition-number">',
+          '#suffix' => '</span>',
+        );
+
+        $form['conditions']['more']['condition'][$key] = array(
+          '#type' => 'select',
+          '#title' => t('Condition...'),
+          '#options' => $this->conditions,
+          '#default_value' => $val,
+        );
+
+        $form['conditions']['more']['equalto'][$key] = array(
+          '#type' => 'textfield',
+          '#title' => t('This value'),
+          '#description' => t('Input a value to compare the field against.  Replacement variables may be used'),
+          '#default_value' => $this->options['conditions']['more']['equalto'][$key],
+        );
+      }
+    }
+
+    $form['new_conditions'] = array(
+      '#type' => 'container',
+      '#attributes' => array('id' => 'new-conditions-container'),
+    );
+
+    $form['new_condition'] = array(
+      '#markup' => l(t('Add another condition'), '', array('fragment' => ' ', 'attributes' => array('id' => 'add-condition'))),
     );
 
     $form['then'] = array(
@@ -116,25 +179,35 @@ class ViewsConditionalHandler extends views_handler_field {
    */
   public function options_validate(&$form, &$form_state) {
     $values = &$form_state['values']['options'];
-    if (empty($values['if']) || empty($values['condition']) || empty($values['equalto'])) {
+    $eqta = &$values['conditions']['more']['equalto'];
+    foreach ($eqta AS $key => $var) {
+      if ($key & 1) {
+        unset($eqta[$key]);
+      }
+    }
+
+    $eqta = array_values($eqta);
+
+    if (empty($values['if']) || empty($values['conditions'])) {
       if (empty($values['if'])) {
         form_set_error('if', t("Please specify a valid field to run a condition on."));
       }
-      if (empty($values['condition'])) {
+      if (empty($values['conditions'])) {
         form_set_error('condition', t("Please select a conditional operator."));
       }
-      if (empty($values['equalto']) && !in_array($values['condition'], array(5, 6))) {
-        form_set_error('condition', t("Please specify something to compare with."));
-      }
+      #if (empty($values['equalto']) && !in_array($values['condition'], array(5, 6))) {
+      #  form_set_error('condition', t("Please specify something to compare with."));
+      #}
     }
   }
+
 
   /**
    * Defines summary text for Fields category in Views.
    */
   public function admin_summary() {
     if (!empty($this->options['if']) && !empty($this->options['condition']) && (!empty($this->options['equalto']) || in_array($this->options['condition'], array(5, 6))) && trim($this->options['then']) != '') {
-      return t('If !if is !condition !equalto, output !then, else output !or', array(
+      return t('If !if !condition !equalto, output !then, else output !or', array(
         '!if' => $this->options['if'],
         '!condition' => $this->conditions[$this->options['condition']],
         '!equalto' => $this->options['equalto'],
