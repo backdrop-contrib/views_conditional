@@ -236,7 +236,7 @@ class ViewsConditionalHandler extends views_handler_field {
     // Strip tags on the "if" field.  Otherwise it appears to
     // output as <div class="xxx">Field data</div>...
     // ...which of course makes it dificult to compare.
-    $r = trim(strip_tags($fields["$if"]->last_render));
+    $r = trim(strip_tags($fields["$if"]->last_render, '<img>'));
 
     // Run conditions.
     switch ($condition) {
