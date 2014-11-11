@@ -170,7 +170,7 @@ class ViewsConditionalHandler extends views_handler_field {
       $f = $var->view->query->pager->display->handler->options['fields'][$key];
     }
 
-    $unparsed = trim($var->last_render);
+    $unparsed = isset($var->last_render) ? trim($var->last_render) : '';
     $parse = TRUE;
     if (!empty($f['element_type'])) {
       $parse = FALSE;
@@ -236,7 +236,7 @@ class ViewsConditionalHandler extends views_handler_field {
     // Strip tags on the "if" field.  Otherwise it appears to
     // output as <div class="xxx">Field data</div>...
     // ...which of course makes it dificult to compare.
-    $r = trim(strip_tags($fields["$if"]->last_render, '<img>'));
+    $r = isset($fields["$if"]->last_render) ? trim(strip_tags($fields["$if"]->last_render, '<img>')) : NULL;
 
     // Run conditions.
     switch ($condition) {
