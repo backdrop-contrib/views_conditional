@@ -30,6 +30,7 @@ class ViewsConditionalHandler extends views_handler_field {
     $options['equalto'] = array('default' => '');
     $options['then'] = array('default' => '');
     $options['or'] = array('default' => '');
+    $options['strip_tags'] = array('default' => FALSE);
 
     return $options;
   }
@@ -84,6 +85,13 @@ class ViewsConditionalHandler extends views_handler_field {
       '#description' => t('Input what should be output if the above conditions do NOT evaluate to true.'),
       '#default_value' => $this->options['or'],
     );
+	
+    $form['strip_tags'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Strip html tags from the output'),
+      '#default_value' => $this->options['strip_tags'],
+    );
+
 
     $form['replacements'] = array(
       '#type' => 'fieldset',
@@ -164,31 +172,9 @@ class ViewsConditionalHandler extends views_handler_field {
   /**
    * Cleans a variable for handling later.
    */
-  public function clean_var($var, $key) {
-    $f = array();
-    if (isset($var->view->query->pager->display->handler->options['fields'][$key])) {
-      $f = $var->view->query->pager->display->handler->options['fields'][$key];
-    }
-
-    $unparsed = isset($var->last_render) ? trim($var->last_render) : '';
-    $parse = TRUE;
-    if (!empty($f['element_type'])) {
-      $parse = FALSE;
-    }
-
-    if (isset($f['alter']['make_link']) && $f['alter']['make_link'] == 1) {
-      $parse = FALSE;
-    }
-
-    if (isset($f['alter']['prefix']) || isset($f['alter']['suffix'])) {
-      $parse = FALSE;
-    }
-
-    if ($parse) {
-      $unparsed = strip_tags($unparsed);
-    }
-
-    return trim($unparsed);
+  public function clean_var($var) {
+    $unparsed = isset($var->last_render) ? $var->last_render : '';
+    return $this->options['strip_tags'] ? trim(strip_tags($unparsed)) : trim($unparsed);
   }
 
   /**
@@ -208,11 +194,11 @@ class ViewsConditionalHandler extends views_handler_field {
     foreach ($this->view->display_handler->get_field_labels() as $key => $var) {
       // If we find a replacement variable, replace it.
       if (strpos($then, "[$key]") !== FALSE) {
-        $field = $this->clean_var($fields[$key], $key);
+        $field = $this->clean_var($fields[$key]);
         $then = str_replace("[$key]", $field, $then);
       }
       elseif (strpos($or, "[$key]") !== FALSE) {
-        $field = $this->clean_var($fields[$key], $key);
+        $field = $this->clean_var($fields[$key]);
         $or = str_replace("[$key]", $field, $or);
       }
     }
@@ -235,7 +221,7 @@ class ViewsConditionalHandler extends views_handler_field {
 
     // Strip tags on the "if" field.  Otherwise it appears to
     // output as <div class="xxx">Field data</div>...
-    // ...which of course makes it dificult to compare.
+    // ...which of course makes it difficult to compare.
     $r = isset($fields["$if"]->last_render) ? trim(strip_tags($fields["$if"]->last_render, '<img>')) : NULL;
 
     // Run conditions.
