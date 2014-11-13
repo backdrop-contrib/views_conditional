@@ -85,7 +85,7 @@ class ViewsConditionalHandler extends views_handler_field {
       '#description' => t('Input what should be output if the above conditions do NOT evaluate to true.'),
       '#default_value' => $this->options['or'],
     );
-	
+
     $form['strip_tags'] = array(
       '#type' => 'checkbox',
       '#title' => t('Strip html tags from the output'),
@@ -131,7 +131,8 @@ class ViewsConditionalHandler extends views_handler_field {
       if (empty($values['condition'])) {
         form_set_error('condition', t("Please select a conditional operator."));
       }
-      if (empty($values['equalto']) && !in_array($values['condition'], array(5, 6))) {
+      // We using there is_numeric because values '0', '0.0' counting as empty in PHP language.
+      if (empty($values['equalto']) && !in_array($values['condition'], array(5, 6)) && !is_numeric($values['equalto'])) {
         form_set_error('condition', t("Please specify something to compare with."));
       }
     }
@@ -141,7 +142,8 @@ class ViewsConditionalHandler extends views_handler_field {
    * Defines summary text for Fields category in Views.
    */
   public function admin_summary() {
-    if (!empty($this->options['if']) && !empty($this->options['condition']) && (!empty($this->options['equalto']) || in_array($this->options['condition'], array(5, 6))) && trim($this->options['then']) != '') {
+    // We using there is_numeric because values '0', '0.0' counting as empty in PHP language.
+    if (!empty($this->options['if']) && !empty($this->options['condition']) && (!empty($this->options['equalto']) || in_array($this->options['condition'], array(5, 6)) || is_numeric($this->options['equalto'])) && trim($this->options['then']) != '') {
       return t('If !if is !condition !equalto, output !then, else output !or', array(
         '!if' => $this->options['if'],
         '!condition' => $this->conditions[$this->options['condition']],
