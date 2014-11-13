@@ -73,14 +73,14 @@ class ViewsConditionalHandler extends views_handler_field {
     );
 
     $form['then'] = array(
-      '#type' => 'textfield',
+      '#type' => 'textarea',
       '#title' => t('Then output this...'),
       '#description' => t('Input what should be output.  Replacement variables may be used.'),
       '#default_value' => $this->options['then'],
     );
 
     $form['or'] = array(
-      '#type' => 'textfield',
+      '#type' => 'textarea',
       '#title' => t('Otherwise, output this...'),
       '#description' => t('Input what should be output if the above conditions do NOT evaluate to true.'),
       '#default_value' => $this->options['or'],
