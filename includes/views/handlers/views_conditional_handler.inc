@@ -195,29 +195,39 @@ class ViewsConditionalHandler extends views_handler_field {
     // Search through field information for possible replacement variables.
     foreach ($this->view->display_handler->get_field_labels() as $key => $var) {
       // If we find a replacement variable, replace it.
+      if (strpos($equalto, "[$key]") !== FALSE) {
+        $field = $this->clean_var($fields[$key]);
+        $equalto = str_replace("[$key]", $field, $equalto);
+      }
       if (strpos($then, "[$key]") !== FALSE) {
         $field = $this->clean_var($fields[$key]);
         $then = str_replace("[$key]", $field, $then);
       }
-      elseif (strpos($or, "[$key]") !== FALSE) {
+      if (strpos($or, "[$key]") !== FALSE) {
         $field = $this->clean_var($fields[$key]);
         $or = str_replace("[$key]", $field, $or);
       }
     }
 
     // If we find a date stamp replacement, replace that.
+    if (strpos($equalto, 'DATE_STAMP') !== FALSE) {
+      $equalto = str_replace('DATE_STAMP', format_date(REQUEST_TIME), $equalto);
+    }
     if (strpos($then, 'DATE_STAMP') !== FALSE) {
       $then = str_replace('DATE_STAMP', format_date(REQUEST_TIME), $then);
     }
-    elseif (strpos($then, 'DATE_STAMP') !== FALSE) {
+    if (strpos($or, 'DATE_STAMP') !== FALSE) {
       $or = str_replace('DATE_STAMP', format_date(REQUEST_TIME), $or);
     }
 
     // If we find a unix date stamp replacement, replace that.
+    if (strpos($equalto, 'DATE_UNIX') !== FALSE) {
+      $equalto = str_replace('DATE_UNIX', REQUEST_TIME, $equalto);
+    }
     if (strpos($then, 'DATE_UNIX') !== FALSE) {
       $then = str_replace('DATE_UNIX', REQUEST_TIME, $then);
     }
-    elseif (strpos($or, 'DATE_UNIX') !== FALSE) {
+    if (strpos($or, 'DATE_UNIX') !== FALSE) {
       $or = str_replace('DATE_UNIX', REQUEST_TIME, $or);
     }
 
