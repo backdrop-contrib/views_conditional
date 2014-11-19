@@ -148,8 +148,8 @@ class ViewsConditionalHandler extends views_handler_field {
         '!if' => $this->options['if'],
         '!condition' => $this->conditions[$this->options['condition']],
         '!equalto' => $this->options['equalto'],
-        '!then' => $this->options['then'],
-        '!or' => $this->options['or'],
+        '!then' => strip_tags($this->options['then']),
+        '!or' => strip_tags($this->options['or']),
       ));
     }
     else {
