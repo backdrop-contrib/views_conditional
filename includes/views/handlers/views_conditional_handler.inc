@@ -46,10 +46,15 @@ class ViewsConditionalHandler extends views_handler_field {
     // Display all labels weighted less than the current label.
     $fields = array(
       0 => '- ' . t('no field selected') . ' -',
-    ) + $this->view->display_handler->get_field_labels();
-
-    // We only use fields up to (not including) this one.
-    unset($fields[$this->options['id']]);
+    );
+    foreach ($this->view->display_handler->get_handlers('field') as $field => $handler) {
+      // We only use fields up to (not including) this one.
+      if ($field == $this->options['id']) {
+        break;
+      }
+      $title = $handler->ui_name();
+      $fields[$field] = "[$field] == $title";
+    }
 
     $form['if'] = array(
       '#type' => 'select',
@@ -110,8 +115,13 @@ class ViewsConditionalHandler extends views_handler_field {
       'DATE_UNIX => Current date / time, in UNIX timestamp format (' . REQUEST_TIME . ')',
       'DATE_STAMP => Current date / time, in standard format (' . format_date(REQUEST_TIME) . ')',
     );
-    foreach ($this->view->display_handler->get_field_labels() as $item => $title) {
-      $items[] = "[$item] => $title";
+    foreach ($this->view->display_handler->get_handlers('field') as $field => $handler) {
+      // We only use fields up to (not including) this one.
+      if ($field == $this->options['id']) {
+        break;
+      }
+      $title = $handler->ui_name();
+      $items[] = "[$field] == $title";
     }
 
     $form['replacements']['variables'] = array(
