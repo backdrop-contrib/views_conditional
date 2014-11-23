@@ -16,6 +16,10 @@ class ViewsConditionalHandler extends views_handler_field {
     6 => 'NOT empty',
     7 => 'Contains',
     8 => 'Does NOT contain',
+    9 => 'Length Equal to',
+    10 => 'Length NOT equal to',
+    11 => 'Length Greater than',
+    12 => 'Length Less than',
   );
 
   /**
@@ -310,7 +314,7 @@ class ViewsConditionalHandler extends views_handler_field {
 
       // Contains
       case 7:
-        if (stripos($r, $equalto) !== FALSE) {
+        if (mb_stripos($r, $equalto) !== FALSE) {
           return $then;
         }
         else {
@@ -320,7 +324,47 @@ class ViewsConditionalHandler extends views_handler_field {
 
       // Does NOT contain
       case 8:
-        if (stripos($r, $equalto) === FALSE) {
+        if (mb_stripos($r, $equalto) === FALSE) {
+          return $then;
+        }
+        else {
+          return $or;
+        }
+        break;
+        
+      // Length Equal to.
+      case 9:
+        if (mb_strlen($r) == $equalto) {
+          return $then;
+        }
+        else {
+          return $or;
+        }
+        break;
+
+      // Length Not equal to.
+      case 10:
+        if (mb_strlen($r) !== $equalto) {
+          return $then;
+        }
+        else {
+          return $or;
+        }
+        break;
+
+      // Length Greater than.
+      case 11:
+        if (mb_strlen($r) > $equalto) {
+          return $then;
+        }
+        else {
+          return $or;
+        }
+        break;
+
+      // Length Less than.
+      case 12:
+        if (mb_strlen($r) < $equalto) {
           return $then;
         }
         else {
