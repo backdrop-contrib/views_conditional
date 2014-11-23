@@ -7,12 +7,16 @@
  * fields in views.  Conditions include:
  *   - Equal to
  *   - NOT equal to
- *   - Great than
+ *   - Greater than
  *   - Less than
  *   - Empty
  *   - NOT empty
  *   - Contains
  *   - Does NOT Contain
+ *   - Length Equal to
+ *   - Length Not Equal to
+ *   - Length Greater than
+ *   - Length Less than
  *
  * Views conditionals allows you to output text
  * based on the result of the condition.
