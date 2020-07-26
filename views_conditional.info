@@ -1,8 +1,6 @@
 name = "Views Conditional"
 description = "Allows conditional views output."
-dependencies[] = views
+backdrop = 1.x
+type = module
 package = Views
-core = 7.x
 
-; Include views handlers
-files[] = includes/views/handlers/views_conditional_handler.inc

@@ -331,7 +331,7 @@ class ViewsConditionalHandler extends views_handler_field {
           return $or;
         }
         break;
-        
+
       // Length Equal to.
       case 9:
         if (mb_strlen($r) == $equalto) {
